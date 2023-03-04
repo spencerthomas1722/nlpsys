@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dependency graph results</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+    crossorigin="anonymous">
+</head>
+<body>
+    <div class="row">
+        <div class="column">
+            <h2>SpaCy</h2>
+            {{ spacy_result }}
+        </div>
+        <div class="column">
+            <h2>Stanza EWT</h2>
+            {{ ewt_result }}
+        </div>
+        <div class="column">
+            <h2>Stanza GUM</h2>
+            {{ gum_result }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="column">
+            <h2>Stanza LINES</h2>
+            {{ lines_result }}
+        </div>
+        <div class="column">
+            <h2>Stanza ParTUT</h2>
+            {{ partut_result }}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,9 @@
+FROM python:3.9.6-buster
+
+RUN apt-get update
+
+WORKDIR /assignment1
+
+COPY Dockerfile /
+
+CMD ["python", "flask_app.py"]

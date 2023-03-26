@@ -1,13 +1,17 @@
+import os
 import sys, sqlite3
 import spacy
 
-SQL_CREATE = "CREATE TABLE entities (id INT PRIMARY KEY, entity TEXT, sent TEXT, label TEXT)"
+
+SQL_CREATE = "CREATE TABLE entities (id INT PRIMARY KEY, entity TEXT, label TEXT, start_token INT, end_token INT, start_char INT, end_char INT, sent TEXT)"
+# start token INT, end token INT, start char INT, end char INT,
 SQL_SELECT = "SELECT * FROM entities"
-SQL_INSERT = "INSERT INTO entities VALUES (?, ?, ?, ?)"
+SQL_INSERT = "INSERT INTO entities VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
 
 
 class DatabaseConnection(object):
     def __init__(self, filename):
+        self.path = os.path.join(os.getcwd(), filename)
         self.connection = sqlite3.connect(filename, check_same_thread=False)
         self.create_schema()
 
@@ -18,16 +22,23 @@ class DatabaseConnection(object):
             print("Warning: table 'entities' was already created; ignoring.")
 
     def get(self, query=None):
-        # get all entities
-        # or all entities with the same name
-        cursor = (self.connection.execute(f'{ SQL_SELECT } WHERE entity="{ query }"')
-                  if query is not None else self.connection.execute(SQL_SELECT))
-        return cursor.fetchall()
+        # get all entities with the same name
+        if query is not None:
+            cursor = (self.connection.execute(f'{SQL_SELECT} WHERE entity="{query}"'))
+            # pattern = query + '%'
+            # cursor = (self.connection.execute(f'{ SQL_SELECT } WHERE entity LIKE "{ pattern }"')
+        # or get all entities (when no query)
+        else:
+            cursor = self.connection.execute(SQL_SELECT)
+        fetched = cursor.fetchall()
+        return fetched
 
-    def add(self, ent, ent_start, ent_label, sent):
-        ent_id = hash((ent, ent_start, ent_label, sent))  # including the start index so each instance has a unique hash
+    def add(self, ent, ent_label, start_token, end_token, start_char, end_char, sent):
+        ent_id = hash((ent, start_char, ent_label, sent))  # including the start index so each instance within a sentence has a unique hash
         try:  # put ent in database
-            self.connection.execute(SQL_INSERT, (ent_id, ent, sent, ent_label))
+            # text, label, start token, end token, start char, end char, sent
+            self.connection.execute(SQL_INSERT, (ent_id, ent, ent_label, start_token, end_token, start_char, end_char, sent))
+            # self.connection.execute(SQL_INSERT, (ent_id, ent, ent_label, start_char, end_char, sent))
             self.connection.commit()
         except sqlite3.IntegrityError:
             print(f'Warning: sentence with ID { ent_id } is already in the database; ignoring...')
@@ -44,7 +55,8 @@ if __name__ == '__main__':
     doc = nlp(text)
     # get entity
     for ent in doc.ents:
-        connection.add(ent.text, ent.start_char, ent.label_, text)  # add to history
+        # connection.add(ent.text, ent.label_, ent.start, ent.end, ent.start_char, ent.end_char, text)  # add to history
+        connection.add(ent.text, ent.label_, text)  # add to history
     # connection.add('jane', 'paella')
     # connection.add('john', 'wonton')
     print(connection.get())

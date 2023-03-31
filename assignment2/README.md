@@ -19,3 +19,5 @@ To run this program, I suggest doing the following:
 `docker build -t st_app .`
 
 `docker run -p 5000:5000 stapp`
+
+To run the app without Docker, you can simply run `streamlit run Home.py` within the `assignment2` directory.

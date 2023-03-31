@@ -24,9 +24,10 @@ with st.form('new_input'):
         st.session_state.last_input = doc
         # get entity
         for ent in doc.ents:  # add to database
-            # ent, ent_label, start_token, end_token, start_char, end_char, sent
-            connection.add(ent.text, ent.label_, ent.start, ent.end, ent.start_char, ent.end_char, text_input)  # add to history
+            connection.add(ent.text, ent.label_)  # add to history
         switch_page('Results')
 
 # TODO remove before submitting:
 # multiple pages: https://towardsdatascience.com/3-ways-to-create-a-multi-page-streamlit-app-1825b5b07c0f
+
+# TODO dockerize

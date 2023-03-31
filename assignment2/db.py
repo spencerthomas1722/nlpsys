@@ -3,10 +3,9 @@ import sys, sqlite3
 import spacy
 
 
-SQL_CREATE = "CREATE TABLE entities (id INT PRIMARY KEY, entity TEXT, label TEXT, start_token INT, end_token INT, start_char INT, end_char INT, sent TEXT)"
-# start token INT, end token INT, start char INT, end char INT,
+SQL_CREATE = "CREATE TABLE entities (id INT PRIMARY KEY, entity TEXT, ent_label TEXT, count INT)"
 SQL_SELECT = "SELECT * FROM entities"
-SQL_INSERT = "INSERT INTO entities VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+SQL_INSERT = "INSERT INTO entities VALUES (?, ?, ?, ?)"
 
 
 class DatabaseConnection(object):
@@ -33,16 +32,17 @@ class DatabaseConnection(object):
         fetched = cursor.fetchall()
         return fetched
 
-    def add(self, ent, ent_label, start_token, end_token, start_char, end_char, sent):
-        ent_id = hash((ent, start_char, ent_label, sent))  # including the start index so each instance within a sentence has a unique hash
-        try:  # put ent in database
-            # text, label, start token, end token, start char, end char, sent
-            self.connection.execute(SQL_INSERT, (ent_id, ent, ent_label, start_token, end_token, start_char, end_char, sent))
-            # self.connection.execute(SQL_INSERT, (ent_id, ent, ent_label, start_char, end_char, sent))
+    def add(self, ent, ent_label):
+        ent_id = hash((ent, ent_label))  # create a hash so the same string with different labels will get stored separately
+        cursor = (self.connection.execute(f'{ SQL_SELECT } WHERE id="{ ent_id }"'))
+        item = cursor.fetchone()
+        # print(f'item={ item }, type = { type(item) }')
+        if item is not None:
+            self.connection.execute(f'UPDATE entities SET count = count + 1 WHERE id="{ ent_id }"')
             self.connection.commit()
-        except sqlite3.IntegrityError:
-            print(f'Warning: sentence with ID { ent_id } is already in the database; ignoring...')
-            self.connection.rollback()
+        else:
+            self.connection.execute(SQL_INSERT, (ent_id, ent, ent_label, 1))
+            self.connection.commit()
 
 
 if __name__ == '__main__':
